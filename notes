@@ -1,0 +1,7 @@
+kinds of attacks : key recoverey, distinguishing
+key recovery : relationship between inputs
+distinguishing : relationship between output keys
+differential attack problem : states are dependant to each other because of calculation in the fsm so pilling up lema cant be used
+
+concentrate on last bit of output inn boolean function: 100 more clocked -> more randomness
+
