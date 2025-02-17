@@ -1,5 +1,4 @@
 #include <iostream>
-#include <random>
 #include <cstdint>
 #include <vector>
 #include <array>
@@ -7,7 +6,7 @@
 #include <iomanip>
 #include <cmath>
 #include <omp.h>
-#include <thread>
+#include <immintrin.h> 
 
 alignas(16) const uint8_t AES_SBOX[256] = {
    
@@ -170,7 +169,7 @@ double compute_linear_approximation(uint32_t mask,
 
     uint64_t total_count = max_iterations;
 
-    double bias = static_cast<double>(std::abs(static_cast<int64_t>(match_count - total_count / 2))) / total_count;
+    double bias = static_cast<double>(std::abs(static_cast<int64_t>(match_count - (total_count / 2)))) / total_count;
 
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end_time - start_time;
@@ -185,44 +184,15 @@ double compute_linear_approximation(uint32_t mask,
 int main() {
     std::array<std::array<uint8_t, 4>, 256> T0, T1, T2, T3;
     precompute_tables(T0, T1, T2, T3);
-    using namespace std::this_thread;     // sleep_for, sleep_until
-    using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
-    using std::chrono::system_clock;
-    std::random_device rd;
 
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> distrib(0.0, 1.0);
-    std::uniform_real_distribution<> distrib_time(0.5, .7);
+    uint32_t number;  
+    while (1)
+    {
+        std::cout << "Enter a 32-bit hexadecimal mask (e.g., 1A3F22BE): ";
+        std::cin >> std::hex >> number; 
 
-    auto start_time_program = std::chrono::high_resolution_clock::now();
-    for (uint64_t i = 0; i < ms_n; i++) {
-        double randomBetween0And1 = distrib(gen);
-        double randomBetween0And2 = distrib(gen);
-        double randomBetween0And3 = distrib_time(gen);
-        int factor = randomBetween0And2 > 0.5 ? 100000 : 10000;
-        randomBetween0And1 = randomBetween0And1 / factor;
-        randomBetween0And3 = randomBetween0And3 / 100;
-        
-        std::cout << "Mask: 0x" << std::hex << std::setw(8) << std::setfill('0') << i
-        << ", Bias: " << std::dec << std::fixed << std::setprecision(8) << randomBetween0And1
-        << ", Time: " << std::dec << std::fixed << std::setprecision(5) << randomBetween0And3 << " seconds" << std::endl;
-        
-        sleep_for(50000000ns);
-        continue;
-
-        compute_linear_approximation(i, T0, T1, T2, T3);
+        compute_linear_approximation(number, T0, T1, T2, T3);
     }
-    std::uniform_real_distribution<> distrib1(9290.3444444, 10649.49999);
-
-    double randomBetween0And4 = distrib1(gen);
-
-    sleep_for(1.9h);
-    auto end_time_program = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> diff_program = end_time_program - start_time_program;
-
-    std::cout << "Completed!" <<  " Time: " << std::dec << std::fixed << std::setprecision(5) << randomBetween0And4 << " seconds" << std::endl;
-
-
+    
     return 0;
 }

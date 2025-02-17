@@ -5,8 +5,6 @@
 #include <chrono>
 #include <iomanip>
 
-const uint64_t ms_n = 1ULL << 32;
-const uint64_t ms_m = 1ULL << 29;
 
 // AES S-box
 const uint8_t AES_SBOX[256] = {
@@ -118,11 +116,11 @@ double compute_linear_approximation(uint32_t mask,
     };
 
     uint64_t match_count = 0;
-    uint64_t total_count = 0;
 
     // Iterate through all possible inputs (this is impractical for full range)
     // For demonstration purposes, limit the iterations
-    const uint64_t max_iterations = 1ULL << 32;  // Adjust this value as needed
+    const uint64_t max_iterations = 1ULL << 20;  // Adjust this value as needed
+    const uint64_t half_iterations = max_iterations >> 1;  // Adjust this value as needed
 
     for (uint64_t input_value = 0; input_value < max_iterations; ++input_value) {
         // Extract 8-bit components of input
@@ -146,17 +144,16 @@ double compute_linear_approximation(uint32_t mask,
 
         match_count += !(input_masked ^ output_masked);
        
-        total_count += 1;
     }
 
     // Compute bias
-    double bias = static_cast<double>(std::abs(static_cast<int64_t>(match_count - total_count / 2))) / total_count;
+    double bias = static_cast<double>(std::abs(static_cast<int64_t>(match_count - half_iterations))) / half_iterations;
 
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end_time - start_time;
 
     std::cout << "Mask: 0x" << std::hex << std::setw(8) << std::setfill('0') << mask
-              << ", Bias: " << std::dec << std::fixed << std::setprecision(12) << bias/100000
+              << ", Bias: " << std::dec << std::fixed << std::setprecision(12) << bias
               << ", Time: " << std::dec << std::fixed << std::setprecision(5) << diff.count() << " seconds" << std::endl;
 
     return bias;
@@ -167,15 +164,24 @@ int main() {
     std::array<std::array<uint8_t, 4>, 256> T0, T1, T2, T3;
     precompute_tables(T0, T1, T2, T3);
 
-    // Example masks
-    std::vector<uint32_t> test_masks = { 0xFFFFFB2F };  // Modify or add more masks as needed
+    uint32_t number;  
+    // while (1)
+    // {
+    //     std::cout << "Enter a 32-bit hexadecimal mask (e.g., 1A3F): ";
+    //     std::cin >> std::hex >> number; 
 
-    for (uint32_t mask : test_masks) {
-        compute_linear_approximation(mask, T0, T1, T2, T3);
-    }
-    for (uint64_t i = ms_n; i >= 0; i--) {
-        compute_linear_approximation(i, T0, T1, T2, T3);
-    }
+    //     compute_linear_approximation(number, T0, T1, T2, T3);
+    // }
+    const uint64_t x = 5;
+    uint64_t y = 5;
+    uint64_t z = (x >> 1);
+    uint64_t z1 = (y >> 1);
+    std::cout << "output for x "  << z << " output for y " << z1 << std::endl;
+    uint64_t z2 = x ^ y;
+    bool z3 = !(x^y);
+    std::cout << "output for z2 "  << z2 << std::endl;
+    std::cout << "output for z3 "  << z3 << std::endl;
+
 
     return 0;
 }
